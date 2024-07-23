@@ -8,16 +8,27 @@ const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: 'https://sgl.vercel.app', // Ensure this is correct
-  credentials: true,
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
-}));
-app.use(bodyParser.json());
+// CORS Middleware Function
+const allowCors = (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', 'https://sgl.vercel.app'); // Your frontend URL
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
 
-// Handle preflight requests
-app.options('*', cors());
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  next();
+};
+
+// Middleware
+app.use(allowCors);
+app.use(bodyParser.json());
 
 // Routes
 app.use('/api/feedback', feedbackRoutes);
