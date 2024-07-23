@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   .catch(err => console.log(err));
 
 // Test route
-app.get('/test', (req, res) => {
+app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
