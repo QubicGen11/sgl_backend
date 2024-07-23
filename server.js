@@ -9,7 +9,11 @@ const feedbackRoutes = require('./routes/feedback');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  // origin: 'http://localhost:5173', 
+  origin:'https://sgl.vercel.app', // Add your frontend URLs here
+  credentials: true
+}));
 app.use(bodyParser.json());
 
 // Routes
@@ -25,7 +29,7 @@ app.get('/test', (req, res) => {
   res.send('Hello World!');
 });
 app.get('/', (req, res) => {
-  res.send('Api is workking fine ');
+  res.send('API is working fine.');
 });
 
 // Set up the port dynamically
