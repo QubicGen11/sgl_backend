@@ -10,11 +10,14 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'https://sgl.vercel.app', // Make sure the origin is correct
+  origin: 'https://sgl.vercel.app', // Ensure this is correct
   credentials: true,
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 app.use(bodyParser.json());
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Routes
 app.use('/api/feedback', feedbackRoutes);
