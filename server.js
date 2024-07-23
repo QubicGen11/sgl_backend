@@ -21,14 +21,20 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   .catch(err => console.log(err));
 
 // Test route
-app.get('/', (req, res) => {
+app.get('/test', (req, res) => {
   res.send('Hello World!');
 });
+app.get('/', (req, res) => {
+  res.send('Api is workking fine ');
+});
 
-// Set up the port
-const PORT = process.env.PORT || 3000;
+// Set up the port dynamically
+const PORT = process.env.PORT || 4000;
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Export the app for Vercel
+module.exports = app;
