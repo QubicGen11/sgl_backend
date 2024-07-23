@@ -10,9 +10,9 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'https://sgl.vercel.app', 
-  // origin:'https://sgl.vercel.app', // Add your frontend URLs here
-  credentials: true
+  origin: 'https://sgl.vercel.app', // Make sure the origin is correct
+  credentials: true,
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 app.use(bodyParser.json());
 
