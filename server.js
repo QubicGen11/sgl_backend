@@ -10,8 +10,8 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  // origin: 'http://localhost:5173', 
-  origin:'https://sgl.vercel.app', // Add your frontend URLs here
+  origin: 'http://localhost:5173', 
+  // origin:'https://sgl.vercel.app', // Add your frontend URLs here
   credentials: true
 }));
 app.use(bodyParser.json());
