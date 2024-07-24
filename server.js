@@ -8,26 +8,15 @@ const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
 
-// CORS Middleware Function
-const allowCors = (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', 'https://sgl.vercel.app'); // Your frontend URL
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  next();
-};
-
 // Middleware
-app.use(allowCors);
+app.use(cors({
+  // origin: 'http://localhost:5173', 
+  origin: 'https://sgl.vercel.app', 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(bodyParser.json());
 
 // Routes
