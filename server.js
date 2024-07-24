@@ -1,13 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const morgan=require('morgan')
 const cors = require('cors');
 require('dotenv').config();
 
 const feedbackRoutes = require('./routes/feedback');
+
 const app = express();
-app.use(morgan('dev'))
 
 const allowedOrigins = ['https://sgl.vercel.app', 'http://localhost:5173', 'https://sglbk.vercel.app'];
 
@@ -24,9 +23,18 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
+// Middleware to log requests for debugging
+app.use((req, res, next) => {
+  console.log(`Received request: ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.json());
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 app.use('/api/feedback', feedbackRoutes);
 
