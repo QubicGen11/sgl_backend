@@ -1,24 +1,22 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const morgan=require('morgan')
 const cors = require('cors');
 require('dotenv').config();
 
 const feedbackRoutes = require('./routes/feedback');
-
 const app = express();
+app.use(morgan('dev'))
 
-// Define CORS options for multiple origins
 const allowedOrigins = ['https://sgl.vercel.app', 'http://localhost:5173', 'https://sglbk.vercel.app'];
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
     } else {
-      return callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
@@ -32,7 +30,6 @@ app.use(express.json());
 
 app.use('/api/feedback', feedbackRoutes);
 
-// Update mongoose connection without deprecated options
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected...'))
   .catch(err => console.log('MongoDB connection error:', err));
