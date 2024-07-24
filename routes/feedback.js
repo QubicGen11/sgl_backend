@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Feedback = require('../models/Feedback');
 
+
+router.use((req, res, next) => {
+  console.log(`Request received at ${new Date().toISOString()}`);
+  next();
+});
+
 // Create feedback
 router.post('/', async (req, res) => {
   try {
