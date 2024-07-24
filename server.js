@@ -8,16 +8,23 @@ const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
 
-const corsOptions = {
-  origin: ['https://sgl.vercel.app', 'http://localhost:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+const allowedOrigins = ['https://sgl.vercel.app', 'http://localhost:5173'];
 
-app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
 app.use(bodyParser.json());
-
 app.use('/api/feedback', feedbackRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
@@ -32,7 +39,7 @@ app.get('/', (req, res) => {
   res.send('API is working fine.');
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
