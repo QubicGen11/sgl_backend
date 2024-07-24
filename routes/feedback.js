@@ -6,13 +6,12 @@ const Feedback = require('../models/Feedback');
 router.post('/', async (req, res) => {
   try {
     const feedback = new Feedback(req.body);
-    const savedFeedback = await feedback.save();
-    res.status(201).json(savedFeedback);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    await feedback.save();
+    res.status(201).send(feedback);
+  } catch (error) {
+    res.status(400).send({ error: error.message });
   }
 });
-
 // Get all feedback or by email
 router.get('/', async (req, res) => {
   try {
