@@ -8,19 +8,13 @@ const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
 
-const corsOptions = {
-  origin: ['https://sgl.vercel.app/', 'http://localhost:5173', 'https://sglbk.vercel.app/'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-app.use(cors(corsOptions));
+// Allow all origins
+app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/api/feedback', feedbackRoutes);
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected...'))
   .catch(err => console.log('MongoDB connection error:', err));
 
