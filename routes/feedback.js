@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Feedback = require('../models/Feedback');
 
-
+// Middleware for logging requests
 router.use((req, res, next) => {
   console.log(`Request received at ${new Date().toISOString()}`);
   next();
@@ -14,12 +14,11 @@ router.post('/', async (req, res) => {
     const feedback = new Feedback(req.body);
     await feedback.save();
     res.status(201).send(feedback);
-
-    res.send("Api is working fine")
   } catch (error) {
     res.status(400).send({ error: error.message });
   }
 });
+
 // Get all feedback or by email
 router.get('/', async (req, res) => {
   try {
