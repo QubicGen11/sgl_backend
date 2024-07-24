@@ -14,6 +14,8 @@ router.post('/', async (req, res) => {
     const feedback = new Feedback(req.body);
     await feedback.save();
     res.status(201).send(feedback);
+
+    res.send("Api is working fine")
   } catch (error) {
     res.status(400).send({ error: error.message });
   }
