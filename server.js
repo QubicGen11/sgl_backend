@@ -10,8 +10,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  // origin: 'http://localhost:5173', 
-  origin: 'https://sgl.vercel.app', 
+  origin: 'https://sgl.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -31,6 +30,7 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 app.get('/test', (req, res) => {
   res.send('Hello World!');
 });
+
 app.get('/', (req, res) => {
   res.send('API is working fine.');
 });
