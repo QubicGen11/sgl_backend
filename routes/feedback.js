@@ -9,7 +9,7 @@ router.use((req, res, next) => {
 });
 
 // Create feedback
-router.post('/', async (req, res) => {
+router.post('/create', async (req, res) => {
   try {
     const feedback = new Feedback(req.body);
     await feedback.save();
