@@ -8,13 +8,16 @@ const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
 
-// Middleware
-app.use(cors({
+// Define CORS options
+const corsOptions = {
   origin: ['https://sgl.vercel.app', 'http://localhost:5173'], // Add both your production and development URLs
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+// Middleware
+app.use(cors(corsOptions)); // Apply CORS middleware
 app.use(bodyParser.json());
 
 // Routes
