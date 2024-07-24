@@ -9,7 +9,7 @@ const feedbackRoutes = require('./routes/feedback');
 const app = express();
 
 const corsOptions = {
-  origin: ['https://sgl.vercel.app', 'http://localhost:5173'],
+  origin: ['https://sgl.vercel.app', 'http://localhost:5173', 'https://sgl-backend-eight.vercel.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
