@@ -8,41 +8,34 @@ const feedbackRoutes = require('./routes/feedback');
 
 const app = express();
 
-// Define CORS options
 const corsOptions = {
-  origin: ['https://sgl.vercel.app', 'http://localhost:5173'], // Add both your production and development URLs
+  origin: ['https://sgl.vercel.app', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-// Middleware
-app.use(cors(corsOptions)); // Apply CORS middleware
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-// Routes
 app.use('/api/feedback', feedbackRoutes);
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected...'))
-  .catch(err => console.log(err));
+  .catch(err => console.log('MongoDB connection error:', err));
 
-// Test route
 app.get('/test', (req, res) => {
   res.send('Hello World!');
 });
+
 app.get('/', (req, res) => {
   res.send('API is working fine.');
 });
 
-// Set up the port dynamically
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
-// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// Export the app for Vercel
 module.exports = app;
