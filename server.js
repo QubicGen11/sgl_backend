@@ -5,6 +5,8 @@ const cors = require('cors');
 require('dotenv').config();
 
 const feedbackRoutes = require('./routes/feedback');
+const mailRoutes = require('./routes/mail');
+const adminRoutes = require('./routes/admin');
 const Feedback = require('./models/Feedback'); // Import the Feedback model
 
 const app = express();
@@ -38,13 +40,12 @@ app.use(express.json());
 app.options('*', cors(corsOptions));
 
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/mail', mailRoutes);
+app.use('/api/admin', adminRoutes);
 
 let individualsList = [
   'Aishwarya', 'Akashkumar', 'Akhila', 'Anjali', 'Anudeep', 'Ashwini', 'Baji', 'Bharghav', 'Booja', 'Divya',
-  'Harshit', 'Hemaletha', 'Hemendra', 'Hrithik', 'Ishika', 'Jahnavi', 'Jigsaya', 'Kalyani', 'Kiran', 'Kunmun',
-  'Lakshmana Rao', 'Manga', 'Mani', 'Manish', 'Manohar', 'Monica', 'Nikhita', 'Pradeep', 'Pranathi', 'Praveen',
-  'Rama Rao', 'Ravi Kumar', 'Raviteja', 'Shashank', 'Sheeja', 'Shreyas', 'Smitha', 'Sneha', 'Sravan', 'Srikanth',
-  'Subham', 'Sumavanthi', 'Surabhi', 'Venkatesh'
+  'Harshit', 'Hemaletha', 'Hemendra'
 ];
 
 let servicesList = [
@@ -52,39 +53,46 @@ let servicesList = [
 ];
 
 app.get('/api/lists', (req, res) => {
+  console.log('Fetching individuals and services lists');
   res.json({ individualsList, servicesList });
 });
 
 app.post('/api/lists/individuals', (req, res) => {
   const { updatedList } = req.body;
+  console.log('Updating individuals list:', updatedList);
   individualsList = updatedList;
   res.json({ success: true });
 });
 
 app.post('/api/lists/services', (req, res) => {
   const { updatedList } = req.body;
+  console.log('Updating services list:', updatedList);
   servicesList = updatedList;
   res.json({ success: true });
 });
 
 app.get('/api/feedback/suggestions', async (req, res) => {
-  const { email } = req.query;
+  const { email, name } = req.query;
   try {
-    if (!email) {
-      return res.status(400).send('Email query parameter is required');
+    let suggestions;
+    if (email) {
+      suggestions = await Feedback.find({ email: new RegExp(email, 'i') }).select('email');
+    } else if (name) {
+      const regex = new RegExp(name.split(' ').join('|'), 'i'); // for searching by first + last name
+      suggestions = await Feedback.find({ $or: [{ firstName: regex }, { lastName: regex }] }).select('firstName lastName');
+    } else {
+      return res.status(400).json({ message: 'Bad Request: email or name query parameter is required' });
     }
-    const suggestions = await Feedback.find({ email: { $regex: email, $options: 'i' } }).distinct('email');
-    res.json(suggestions);
+    res.json(suggestions.map(s => email ? s.email : `${s.firstName}${s.lastName}`));
   } catch (error) {
-    console.error('Error fetching email suggestions:', error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ message: 'Error fetching suggestions' });
   }
 });
 
-// Route to fetch feedback within date range
 app.get('/api/feedback/date-range', async (req, res) => {
   const { startDate, endDate } = req.query;
   try {
+    console.log(`Fetching feedback from ${startDate} to ${endDate}`);
     if (!startDate || !endDate) {
       return res.status(400).send('Start date and end date query parameters are required');
     }

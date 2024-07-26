@@ -1,19 +1,17 @@
-// models/Feedback.js
 const mongoose = require('mongoose');
 
-const feedbackSchema = new mongoose.Schema({
-  email: String,
-  firstName: String,
-  lastName: String,
-  phoneNumber: String,
-  services: [String],
-  individuals: [String],
-  professionalism: Object,
-  responseTime: Object,
-  overallServices: Object,
-  feedback: String,
-  recommend: String,
-  createdAt: { type: Date, default: Date.now }
-});
+const FeedbackSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
+  services: { type: [String], required: true },
+  individuals: { type: [String], required: true },
+  professionalism: { type: Object, required: true },
+  responseTime: { type: Object, required: true },
+  overallServices: { type: Object, required: true },
+  feedback: { type: String, required: true },
+  recommend: { type: String, required: true }
+}, { timestamps: true });
 
-module.exports = mongoose.model('Feedback', feedbackSchema);
+module.exports = mongoose.model('Feedback', FeedbackSchema);
