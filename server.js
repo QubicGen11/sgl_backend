@@ -11,7 +11,7 @@ const Feedback = require('./models/Feedback'); // Import the Feedback model
 
 const app = express();
 
-const allowedOrigins = ['https://sgl.vercel.app', 'http://localhost:5173', 'https://sglbk.vercel.app', 'http://localhost:8081'];
+const allowedOrigins = ['https://sgl.vercel.app', 'http://172.210.51.159:5173', 'https://sglbk.vercel.app', 'http://172.210.51.159:8081'];
 
 const corsOptions = {
   origin: (origin, callback) => {
