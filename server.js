@@ -38,7 +38,7 @@ app.use(express.json());
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
-
+app.use('/api/admin', adminRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/mail', mailRoutes);
 app.use('/api/admin', adminRoutes);
@@ -77,17 +77,29 @@ app.get('/api/feedback/suggestions', async (req, res) => {
     let suggestions;
     if (email) {
       suggestions = await Feedback.find({ email: new RegExp(email, 'i') }).select('email');
+      res.json(suggestions.map(s => s.email));
     } else if (name) {
       const regex = new RegExp(name.split(' ').join('|'), 'i'); // for searching by first + last name
-      suggestions = await Feedback.find({ $or: [{ firstName: regex }, { lastName: regex }] }).select('firstName lastName');
+      suggestions = await Feedback.find({
+        $or: [
+          { firstName: regex },
+          { lastName: regex },
+          { fullName: { $regex: regex } }
+        ]
+      }).select('firstName lastName');
+      res.json(suggestions.map(s => `${s.firstName} ${s.lastName}`));
     } else {
       return res.status(400).json({ message: 'Bad Request: email or name query parameter is required' });
     }
-    res.json(suggestions.map(s => email ? s.email : `${s.firstName}${s.lastName}`));
   } catch (error) {
     res.status(500).json({ message: 'Error fetching suggestions' });
   }
 });
+
+
+
+
+
 
 app.get('/api/feedback/date-range', async (req, res) => {
   const { startDate, endDate } = req.query;

@@ -29,7 +29,6 @@ router.post('/', async (req, res) => {
       from: process.env.EMAIL_USER,
       to: 'sanjusazid0@gmail.com',
       subject: 'New Feedback Submitted',
-      
       text: `A new feedback has been submitted by ${feedback.email}`
     };
 
@@ -40,13 +39,11 @@ router.post('/', async (req, res) => {
       subject: 'Thank you for your feedback',
       text: `Dear ${feedback.firstName},
 
-Thank you for submitting your feedback. We have received your message and will get back to you shortly.
+Thank you for submitting your feedback.
 
 Best regards,
 Somireddy Law Group PLLC`
     };
-
-    
 
     // Send both emails
     let receiverEmailInfo = await transporter.sendMail(receiverMailOptions);
@@ -62,13 +59,22 @@ Somireddy Law Group PLLC`
   }
 });
 
-// Get all feedback or by email
+// Get all feedback or by email or by name
 router.get('/', async (req, res) => {
   try {
-    const { email } = req.query;
+    const { email, name } = req.query;
     let feedbacks;
     if (email) {
       feedbacks = await Feedback.findOne({ email: email });
+    } else if (name) {
+      const regex = new RegExp(name.split(' ').join('|'), 'i');
+      feedbacks = await Feedback.find({
+        $or: [
+          { firstName: regex },
+          { lastName: regex },
+          { fullName: regex }
+        ]
+      });
     } else {
       feedbacks = await Feedback.find();
     }
