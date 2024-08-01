@@ -1,4 +1,5 @@
 const express = require('express');
+const morgan = require('morgan')
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -11,7 +12,7 @@ const Feedback = require('./models/Feedback'); // Import the Feedback model
 
 const app = express();
 
-const allowedOrigins = ['https://sgl.vercel.app', 'http://172.210.51.159:5173', 'https://sglbk.vercel.app', 'http://172.210.51.159:8081'];
+const allowedOrigins = ['https://sgl.vercel.app', 'http://localhost:5173', 'https://sglbk.vercel.app', 'http://localhost:8081'];
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -25,6 +26,10 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
+
+app.use(cors(corsOptions));
+app.use(morgan('dev'))
+
 
 // Middleware to log requests for debugging
 app.use((req, res, next) => {
@@ -44,12 +49,11 @@ app.use('/api/mail', mailRoutes);
 app.use('/api/admin', adminRoutes);
 
 let individualsList = [
-  'Aishwarya', 'Akashkumar', 'Akhila', 'Anjali', 'Anudeep', 'Ashwini', 'Baji', 'Bharghav', 'Booja', 'Divya',
-  'Harshit', 'Hemaletha', 'Hemendra'
+  
 ];
 
 let servicesList = [
-  'Immigration', 'Litigation', 'Corporate', 'Employment', 'Family Based Immigration', 'Other'
+  
 ];
 
 app.get('/api/lists', (req, res) => {
@@ -59,17 +63,18 @@ app.get('/api/lists', (req, res) => {
 
 app.post('/api/lists/individuals', (req, res) => {
   const { updatedList } = req.body;
-  console.log('Updating individuals list:', updatedList);
+  console.log('Updating individuals list:', updatedList); // Check the incoming data
   individualsList = updatedList;
   res.json({ success: true });
 });
 
 app.post('/api/lists/services', (req, res) => {
   const { updatedList } = req.body;
-  console.log('Updating services list:', updatedList);
+  console.log('Updating services list:', updatedList); // Check the incoming data
   servicesList = updatedList;
   res.json({ success: true });
 });
+
 
 app.get('/api/feedback/suggestions', async (req, res) => {
   const { email, name } = req.query;
