@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS // Use the generated app password here
+        pass: process.env.EMAIL_PASS
       }
     });
 
@@ -28,17 +28,16 @@ router.post('/', async (req, res) => {
     let receiverMailOptions = {
       from: process.env.EMAIL_USER,
       to: 'sanjusazid0@gmail.com',
-      subject: 'Recieved New Feedback ',
+      subject: 'Received New Feedback',
       text: ` 
+        Greetings,
 
-Greetings,
+        Received new feedback from client ${feedback.email}.
+        Thanks.
 
-Received new feedback from clients ${feedback.email}.
-Thanks.
-
-The details are:
-${feedback.firstName} ${feedback.lastName}
-${feedback.email}
+        The details are:
+        ${feedback.firstName} ${feedback.lastName}
+        ${feedback.email}
       `
     };
 
@@ -49,18 +48,15 @@ ${feedback.email}
       subject: 'Thank you for your feedback',
       text: `Dear ${feedback.firstName},
 
-Thank you for submitting your feedback.
+      Thank you for submitting your feedback.
 
-Best regards,
-Somireddy Law Group PLLC`
+      Best regards,
+      Somireddy Law Group PLLC`
     };
 
     // Send both emails
-    let receiverEmailInfo = await transporter.sendMail(receiverMailOptions);
-    console.log('Confirmation email sent to receiver:', receiverEmailInfo);
-
-    let senderEmailInfo = await transporter.sendMail(senderMailOptions);
-    console.log('Confirmation email sent to sender:', senderEmailInfo);
+    await transporter.sendMail(receiverMailOptions);
+    await transporter.sendMail(senderMailOptions);
 
     res.status(201).send(feedback);
   } catch (error) {
@@ -69,10 +65,10 @@ Somireddy Law Group PLLC`
   }
 });
 
-// Get all feedback or by email or by name
+// Get all feedback or by email, name, or organization
 router.get('/', async (req, res) => {
   try {
-    const { email, name } = req.query;
+    const { email, name, organizationName } = req.query; // Use organizationName as the query parameter
     let feedbacks;
     if (email) {
       feedbacks = await Feedback.findOne({ email: email });
@@ -85,12 +81,43 @@ router.get('/', async (req, res) => {
           { fullName: regex }
         ]
       });
+    } else if (organizationName) {
+      feedbacks = await Feedback.find({ organizationName: organizationName });
     } else {
       feedbacks = await Feedback.find();
     }
     res.json(feedbacks);
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Get suggestions by email, name, or organization
+router.get('/suggestions', async (req, res) => {
+  const { email, name, organizationName } = req.query; // Use organizationName
+  try {
+    let suggestions;
+    if (email) {
+      suggestions = await Feedback.find({ email: new RegExp(email, 'i') }).select('email');
+      res.json(suggestions.map(s => s.email));
+    } else if (name) {
+      const regex = new RegExp(name.split(' ').join('|'), 'i'); // for searching by first + last name
+      suggestions = await Feedback.find({
+        $or: [
+          { firstName: regex },
+          { lastName: regex },
+          { fullName: { $regex: regex } }
+        ]
+      }).select('firstName lastName');
+      res.json(suggestions.map(s => `${s.firstName} ${s.lastName}`));
+    } else if (organizationName) {  // Handle organizationName suggestion
+      suggestions = await Feedback.find({ organizationName: new RegExp(organizationName, 'i') }).select('organizationName');
+      res.json(suggestions.map(s => s.organizationName));
+    } else {
+      return res.status(400).json({ message: 'Bad Request: email, name, or organizationName query parameter is required' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching suggestions' });
   }
 });
 

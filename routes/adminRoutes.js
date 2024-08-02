@@ -72,7 +72,7 @@ Somireddy Law Group PLLC`
 // Get all feedback or by email or by name
 router.get('/', async (req, res) => {
   try {
-    const { email, name } = req.query;
+    const { email, name, organization } = req.query;
     let feedbacks;
     if (email) {
       feedbacks = await Feedback.findOne({ email: email });
@@ -85,6 +85,8 @@ router.get('/', async (req, res) => {
           { fullName: regex }
         ]
       });
+    } else if (organization) {
+      feedbacks = await Feedback.find({ organization: organization });
     } else {
       feedbacks = await Feedback.find();
     }
@@ -93,6 +95,7 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 // Update feedback by ID
 router.put('/:id', async (req, res) => {

@@ -77,7 +77,7 @@ app.post('/api/lists/services', (req, res) => {
 
 
 app.get('/api/feedback/suggestions', async (req, res) => {
-  const { email, name } = req.query;
+  const { email, name, organizationName } = req.query; // Ensure organizationName is used here
   try {
     let suggestions;
     if (email) {
@@ -93,13 +93,17 @@ app.get('/api/feedback/suggestions', async (req, res) => {
         ]
       }).select('firstName lastName');
       res.json(suggestions.map(s => `${s.firstName} ${s.lastName}`));
+    } else if (organizationName) {  // Handle organizationName suggestion
+      suggestions = await Feedback.find({ organizationName: new RegExp(organizationName, 'i') }).select('organizationName');
+      res.json(suggestions.map(s => s.organizationName));
     } else {
-      return res.status(400).json({ message: 'Bad Request: email or name query parameter is required' });
+      return res.status(400).json({ message: 'Bad Request: email, name, or organizationName query parameter is required' });
     }
   } catch (error) {
     res.status(500).json({ message: 'Error fetching suggestions' });
   }
 });
+
 
 
 
