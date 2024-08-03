@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Feedback = require('../models/Feedback');
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
 // Middleware for logging requests
 router.use((req, res, next) => {
@@ -9,12 +11,13 @@ router.use((req, res, next) => {
   next();
 });
 
-// Create feedback
+// Create feedback and send email to both admin and user
 router.post('/', async (req, res) => {
   try {
+    console.log('Received feedback data:', req.body); // Log the received data for debugging
     const feedback = new Feedback(req.body);
     await feedback.save();
-    
+
     // Set up the nodemailer transporter
     let transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -24,7 +27,7 @@ router.post('/', async (req, res) => {
       }
     });
 
-    // Email options for the receiver (you)
+    // Email options for the receiver (admin)
     let receiverMailOptions = {
       from: process.env.EMAIL_USER,
       to: 'sanjusazid0@gmail.com',
@@ -65,10 +68,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get all feedback or by email, name, or organization
+// Get all feedback or by email or by name
 router.get('/', async (req, res) => {
   try {
-    const { email, name, organizationName } = req.query; // Use organizationName as the query parameter
+    const { email, name } = req.query;
     let feedbacks;
     if (email) {
       feedbacks = await Feedback.findOne({ email: email });
@@ -81,57 +84,12 @@ router.get('/', async (req, res) => {
           { fullName: regex }
         ]
       });
-    } else if (organizationName) {
-      feedbacks = await Feedback.find({ organizationName: organizationName });
     } else {
       feedbacks = await Feedback.find();
     }
     res.json(feedbacks);
   } catch (err) {
     res.status(500).json({ message: err.message });
-  }
-});
-
-// Get feedback by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const feedback = await Feedback.findById(req.params.id);
-    if (!feedback) {
-      return res.status(404).json({ message: 'Feedback not found' });
-    }
-    res.json(feedback);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-
-// Get suggestions by email, name, or organization
-router.get('/suggestions', async (req, res) => {
-  const { email, name, organizationName } = req.query; // Use organizationName
-  try {
-    let suggestions;
-    if (email) {
-      suggestions = await Feedback.find({ email: new RegExp(email, 'i') }).select('email');
-      res.json(suggestions.map(s => s.email));
-    } else if (name) {
-      const regex = new RegExp(name.split(' ').join('|'), 'i'); // for searching by first + last name
-      suggestions = await Feedback.find({
-        $or: [
-          { firstName: regex },
-          { lastName: regex },
-          { fullName: { $regex: regex } }
-        ]
-      }).select('firstName lastName');
-      res.json(suggestions.map(s => `${s.firstName} ${s.lastName}`));
-    } else if (organizationName) {  // Handle organizationName suggestion
-      suggestions = await Feedback.find({ organizationName: new RegExp(organizationName, 'i') }).select('organizationName');
-      res.json(suggestions.map(s => s.organizationName));
-    } else {
-      return res.status(400).json({ message: 'Bad Request: email, name, or organizationName query parameter is required' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching suggestions' });
   }
 });
 
@@ -152,6 +110,48 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'Feedback deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Send email when form is opened
+router.post('/notify-open', async (req, res) => {
+  try {
+    console.log('Received form open notification:', req.body);
+    
+    // Get feedback data from request
+    const { firstName, lastName, formUrl } = req.body;
+
+    // Set up the nodemailer transporter
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Load the HTML template and replace placeholders
+    const htmlTemplate = fs.readFileSync(path.join(__dirname, '../templates/feedback-email.html'), 'utf-8');
+    const htmlContent = htmlTemplate
+      .replace('{{firstName}}', firstName)
+      .replace('{{lastName}}', lastName)
+      .replace('{{formUrl}}', formUrl);
+
+    // Mail options
+    let mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: 'sanjusazid0@gmail.com', // Send to your email
+      subject: 'Feedback Form',
+      html: htmlContent,
+ 
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    res.status(200).send({ message: 'Notification sent successfully' });
+  } catch (error) {
+    console.error('Error sending notification:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 

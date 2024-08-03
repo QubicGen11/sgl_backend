@@ -10,6 +10,7 @@ const mailRoutes = require('./routes/mail');
 const adminRoutes = require('./routes/admin');
 const Feedback = require('./models/Feedback'); // Import the Feedback model
 
+
 const app = express();
 
 const allowedOrigins = ['https://sgl.vercel.app', 'http://localhost:5173', 'https://sglbk.vercel.app', 'http://localhost:8081'];
@@ -43,6 +44,7 @@ app.use(express.json());
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
+app.use('/api', feedbackRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/mail', mailRoutes);
