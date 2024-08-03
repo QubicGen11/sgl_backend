@@ -92,6 +92,20 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get feedback by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const feedback = await Feedback.findById(req.params.id);
+    if (!feedback) {
+      return res.status(404).json({ message: 'Feedback not found' });
+    }
+    res.json(feedback);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
 // Get suggestions by email, name, or organization
 router.get('/suggestions', async (req, res) => {
   const { email, name, organizationName } = req.query; // Use organizationName
