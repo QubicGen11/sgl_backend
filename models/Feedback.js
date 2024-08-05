@@ -16,7 +16,7 @@ const FeedbackSchema = new mongoose.Schema({
   recommend: { type: String, required: true },
   subscribeNewsletter: { type: String },
   termsAccepted: { type: Boolean, required: true },
-  customResponses: { type: Map, of: String },
+  customResponses: { type: Map, of: Number }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Feedback', FeedbackSchema);

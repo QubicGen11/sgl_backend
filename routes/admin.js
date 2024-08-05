@@ -9,7 +9,6 @@ const adminEmail = 'admin@gmail.com';
 let adminPassword = bcrypt.hashSync('admin', 10); // mutable for change password
 
 // Admin login route
-
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -70,22 +69,40 @@ router.get('/form-defaults', authenticateJWT, async (req, res) => {
 
 // Update default form data
 router.post('/form-defaults', async (req, res) => {
-  const { email, organizationName, firstName, lastName, phoneNumber, individualsList, servicesList, feedbackQuestions, titleOptions, newsletterOptions } = req.body;
+  const {
+    email,
+    organizationName,
+    firstName,
+    lastName,
+    phoneNumber,
+    individualsList,
+    servicesList,
+    feedbackQuestions,
+    titleOptions,
+    newsletterOptions,
+    customResponses,  // Added customResponses field
+  } = req.body;
+
   try {
     let settings = await Settings.findOne({});
     if (settings) {
-      settings = await Settings.findOneAndUpdate({}, {
-        email,
-        organizationName,
-        firstName,
-        lastName,
-        phoneNumber,
-        individualsList,
-        servicesList,
-        feedbackQuestions,
-        titleOptions,
-        newsletterOptions
-      }, { new: true });
+      settings = await Settings.findOneAndUpdate(
+        {},
+        {
+          email,
+          organizationName,
+          firstName,
+          lastName,
+          phoneNumber,
+          individualsList,
+          servicesList,
+          feedbackQuestions,
+          titleOptions,
+          newsletterOptions,
+          customResponses,  // Include customResponses in the update
+        },
+        { new: true }
+      );
     } else {
       settings = new Settings({
         email,
@@ -97,7 +114,8 @@ router.post('/form-defaults', async (req, res) => {
         servicesList,
         feedbackQuestions,
         titleOptions,
-        newsletterOptions
+        newsletterOptions,
+        customResponses,  // Include customResponses in the creation
       });
       await settings.save();
     }
@@ -107,5 +125,69 @@ router.post('/form-defaults', async (req, res) => {
   }
 });
 
+// Custom Questions Routes
+
+// Get custom questions
+router.get('/custom-questions', authenticateJWT, async (req, res) => {
+  try {
+    const settings = await Settings.findOne({});
+    res.json(settings ? settings.feedbackQuestions : []);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching custom questions' });
+  }
+});
+
+// Add a custom question
+router.post('/custom-questions', authenticateJWT, async (req, res) => {
+  const { question } = req.body;
+  try {
+    let settings = await Settings.findOne({});
+    if (settings) {
+      settings.feedbackQuestions.push(question);
+      settings = await settings.save();
+    } else {
+      settings = new Settings({ feedbackQuestions: [question] });
+      await settings.save();
+    }
+    res.json(settings.feedbackQuestions);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding custom question' });
+  }
+});
+
+// Update a custom question
+router.put('/custom-questions/:index', authenticateJWT, async (req, res) => {
+  const { index } = req.params;
+  const { question } = req.body;
+  try {
+    let settings = await Settings.findOne({});
+    if (settings && settings.feedbackQuestions[index]) {
+      settings.feedbackQuestions[index] = question;
+      settings = await settings.save();
+      res.json(settings.feedbackQuestions);
+    } else {
+      res.status(404).json({ message: 'Question not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating custom question' });
+  }
+});
+
+// Delete a custom question
+router.delete('/custom-questions/:index', authenticateJWT, async (req, res) => {
+  const { index } = req.params;
+  try {
+    let settings = await Settings.findOne({});
+    if (settings && settings.feedbackQuestions[index]) {
+      settings.feedbackQuestions.splice(index, 1);
+      settings = await settings.save();
+      res.json(settings.feedbackQuestions);
+    } else {
+      res.status(404).json({ message: 'Question not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting custom question' });
+  }
+});
 
 module.exports = router;

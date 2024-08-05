@@ -1,5 +1,5 @@
 const express = require('express');
-const morgan = require('morgan')
+const morgan = require('morgan');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -25,12 +25,13 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 app.use(cors(corsOptions));
-app.use(morgan('dev'))
-
+app.use(morgan('dev'));
+app.use(bodyParser.json());
+app.use(express.json());
 
 // Middleware to log requests for debugging
 app.use((req, res, next) => {
@@ -38,25 +39,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors(corsOptions));
-app.use(bodyParser.json());
-app.use(express.json());
-
 // Handle preflight requests
 app.options('*', cors(corsOptions));
+
+// Mount routes
 app.use('/api', feedbackRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/admin', adminRoutes); // Make sure this line is present
 app.use('/api/mail', mailRoutes);
-app.use('/api/admin', adminRoutes);
 
-let individualsList = [
-  
-];
-
-let servicesList = [
-  
-];
+// In-memory lists (these should ideally be stored in a database)
+let individualsList = [];
+let servicesList = [];
 
 app.get('/api/lists', (req, res) => {
   console.log('Fetching individuals and services lists');
@@ -65,28 +60,27 @@ app.get('/api/lists', (req, res) => {
 
 app.post('/api/lists/individuals', (req, res) => {
   const { updatedList } = req.body;
-  console.log('Updating individuals list:', updatedList); // Check the incoming data
+  console.log('Updating individuals list:', updatedList);
   individualsList = updatedList;
   res.json({ success: true });
 });
 
 app.post('/api/lists/services', (req, res) => {
   const { updatedList } = req.body;
-  console.log('Updating services list:', updatedList); // Check the incoming data
+  console.log('Updating services list:', updatedList);
   servicesList = updatedList;
   res.json({ success: true });
 });
 
-
 app.get('/api/feedback/suggestions', async (req, res) => {
-  const { email, name, organizationName } = req.query; // Ensure organizationName is used here
+  const { email, name, organizationName } = req.query;
   try {
     let suggestions;
     if (email) {
       suggestions = await Feedback.find({ email: new RegExp(email, 'i') }).select('email');
       res.json(suggestions.map(s => s.email));
     } else if (name) {
-      const regex = new RegExp(name.split(' ').join('|'), 'i'); // for searching by first + last name
+      const regex = new RegExp(name.split(' ').join('|'), 'i');
       suggestions = await Feedback.find({
         $or: [
           { firstName: regex },
@@ -95,7 +89,7 @@ app.get('/api/feedback/suggestions', async (req, res) => {
         ]
       }).select('firstName lastName');
       res.json(suggestions.map(s => `${s.firstName} ${s.lastName}`));
-    } else if (organizationName) {  // Handle organizationName suggestion
+    } else if (organizationName) {
       suggestions = await Feedback.find({ organizationName: new RegExp(organizationName, 'i') }).select('organizationName');
       res.json(suggestions.map(s => s.organizationName));
     } else {
@@ -105,12 +99,6 @@ app.get('/api/feedback/suggestions', async (req, res) => {
     res.status(500).json({ message: 'Error fetching suggestions' });
   }
 });
-
-
-
-
-
-
 
 app.get('/api/feedback/date-range', async (req, res) => {
   const { startDate, endDate } = req.query;
@@ -129,10 +117,12 @@ app.get('/api/feedback/date-range', async (req, res) => {
   }
 });
 
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected...'))
   .catch(err => console.log('MongoDB connection error:', err));
 
+// Default routes
 app.get('/test', (req, res) => {
   res.send('Hello World!');
 });
@@ -141,8 +131,8 @@ app.get('/', (req, res) => {
   res.send('API is working fine.');
 });
 
+// Start the server
 const PORT = process.env.PORT || 4000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
