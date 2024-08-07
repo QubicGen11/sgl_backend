@@ -53,12 +53,12 @@ router.post('/change-password', authenticateJWT, async (req, res) => {
 });
 
 // Protected route example
-router.get('/protected-route', authenticateJWT, (req, res) => {
+router.get('/protected-route',  (req, res) => {
   res.json({ message: 'This is a protected route' });
 });
 
 // Get default form data
-router.get('/form-defaults', authenticateJWT, async (req, res) => {
+router.get('/form-defaults',  async (req, res) => {
   try {
     const defaults = await Settings.findOne({});
     res.json(defaults);
@@ -71,6 +71,9 @@ router.get('/form-defaults', authenticateJWT, async (req, res) => {
 router.post('/form-defaults', async (req, res) => {
   const {
     email,
+    companyEmail,
+    companyName,
+    companyPhoneNumber,
     organizationName,
     firstName,
     lastName,
@@ -80,7 +83,7 @@ router.post('/form-defaults', async (req, res) => {
     feedbackQuestions,
     titleOptions,
     newsletterOptions,
-    customResponses,  // Added customResponses field
+    customResponses,
   } = req.body;
 
   try {
@@ -90,6 +93,9 @@ router.post('/form-defaults', async (req, res) => {
         {},
         {
           email,
+          companyEmail,
+          companyName,
+          companyPhoneNumber,
           organizationName,
           firstName,
           lastName,
@@ -99,13 +105,16 @@ router.post('/form-defaults', async (req, res) => {
           feedbackQuestions,
           titleOptions,
           newsletterOptions,
-          customResponses,  // Include customResponses in the update
+          customResponses,
         },
         { new: true }
       );
     } else {
       settings = new Settings({
         email,
+        companyEmail,
+        companyName,
+        companyPhoneNumber,
         organizationName,
         firstName,
         lastName,
@@ -115,7 +124,7 @@ router.post('/form-defaults', async (req, res) => {
         feedbackQuestions,
         titleOptions,
         newsletterOptions,
-        customResponses,  // Include customResponses in the creation
+        customResponses,
       });
       await settings.save();
     }

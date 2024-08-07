@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Settings = require('../models/Settings');
 
-// Get default form data
+// Get default form data (public route)
 router.get('/form-defaults', async (req, res) => {
   try {
     const defaults = await Settings.findOne({});
@@ -50,6 +50,5 @@ router.post('/form-defaults', async (req, res) => {
     res.status(500).json({ message: 'Error updating form defaults' });
   }
 });
-
 
 module.exports = router;
